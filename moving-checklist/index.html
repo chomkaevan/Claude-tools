@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Address Change Checklist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="root"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const AddressChangeApp = () => {
+            const defaultServices = [
+                // Government & Legal - Critical
+                { id: 1, name: 'USPS Address Forwarding', category: 'Government & Legal', priority: 'Critical', url: 'https://www.usps.com/manage/forward.htm', notes: 'Set up 2 weeks before move, costs $1.10' },
+                { id: 2, name: 'DMV / Driver\'s License', category: 'Government & Legal', priority: 'Critical', url: 'https://www.usa.gov/motor-vehicle-services', notes: 'Update within 10-30 days, varies by state' },
+                { id: 3, name: 'Voter Registration', category: 'Government & Legal', priority: 'Critical', url: 'https://vote.gov/', notes: 'Update before registration deadlines' },
+                { id: 4, name: 'Vehicle Registration', category: 'Government & Legal', priority: 'Critical', url: 'https://www.usa.gov/motor-vehicle-services', notes: 'Usually done with DMV update' },
+                { id: 5, name: 'Social Security Administration', category: 'Government & Legal', priority: 'Important', url: 'https://www.ssa.gov/myaccount/', notes: 'If receiving benefits' },
+                { id: 6, name: 'IRS', category: 'Government & Legal', priority: 'Important', url: 'https://www.irs.gov/forms-pubs/about-form-8822', notes: 'File Form 8822, takes 4-6 weeks to process' },
+                
+                // Financial - Critical
+                { id: 7, name: 'Bank Accounts', category: 'Financial', priority: 'Critical', url: '', notes: 'Update for all checking/savings accounts' },
+                { id: 8, name: 'Credit Cards', category: 'Financial', priority: 'Critical', url: '', notes: 'Update each card separately' },
+                { id: 9, name: 'Investment Accounts', category: 'Financial', priority: 'Important', url: '', notes: 'Brokerage, 401k, IRA, etc.' },
+                { id: 10, name: 'PayPal / Venmo', category: 'Financial', priority: 'Important', url: 'https://www.paypal.com/', notes: '' },
+                { id: 11, name: 'Credit Bureaus', category: 'Financial', priority: 'Important', url: '', notes: 'Equifax, Experian, TransUnion' },
+                
+                // Insurance - Critical
+                { id: 12, name: 'Health Insurance', category: 'Insurance', priority: 'Critical', url: '', notes: '' },
+                { id: 13, name: 'Auto Insurance', category: 'Insurance', priority: 'Critical', url: '', notes: 'May affect rates' },
+                { id: 14, name: 'Home/Renters Insurance', category: 'Insurance', priority: 'Critical', url: '', notes: 'Cancel old, start new policy' },
+                { id: 15, name: 'Life Insurance', category: 'Insurance', priority: 'Important', url: '', notes: '' },
+                
+                // Utilities - Critical
+                { id: 16, name: 'Electric Company', category: 'Utilities', priority: 'Critical', url: '', notes: 'Schedule disconnect/connect dates' },
+                { id: 17, name: 'Gas Company', category: 'Utilities', priority: 'Critical', url: '', notes: '' },
+                { id: 18, name: 'Water/Sewer', category: 'Utilities', priority: 'Critical', url: '', notes: '' },
+                { id: 19, name: 'Internet Provider', category: 'Utilities', priority: 'Critical', url: '', notes: 'Check if service available at new address' },
+                { id: 20, name: 'Trash/Recycling', category: 'Utilities', priority: 'Important', url: '', notes: '' },
+                
+                // Subscriptions & Memberships
+                { id: 21, name: 'Amazon', category: 'Subscriptions', priority: 'Important', url: 'https://www.amazon.com/a/addresses', notes: '' },
+                { id: 22, name: 'Streaming Services', category: 'Subscriptions', priority: 'Optional', url: '', notes: 'Netflix, Hulu, Disney+, etc.' },
+                { id: 23, name: 'Gym Membership', category: 'Subscriptions', priority: 'Optional', url: '', notes: '' },
+                { id: 24, name: 'Magazine Subscriptions', category: 'Subscriptions', priority: 'Optional', url: '', notes: '' },
+                { id: 25, name: 'Meal Delivery Services', category: 'Subscriptions', priority: 'Optional', url: '', notes: '' },
+                
+                // Employment & Education
+                { id: 26, name: 'Employer HR Department', category: 'Employment', priority: 'Critical', url: '', notes: 'Update payroll and benefits' },
+                { id: 27, name: 'Professional Licenses', category: 'Employment', priority: 'Important', url: '', notes: 'If applicable' },
+                { id: 28, name: 'School Records', category: 'Employment', priority: 'Important', url: '', notes: 'For children' },
+                { id: 29, name: 'Alumni Association', category: 'Employment', priority: 'Optional', url: '', notes: '' },
+                
+                // Healthcare
+                { id: 30, name: 'Primary Care Physician', category: 'Healthcare', priority: 'Important', url: '', notes: 'Transfer or find new doctor' },
+                { id: 31, name: 'Dentist', category: 'Healthcare', priority: 'Important', url: '', notes: '' },
+                { id: 32, name: 'Pharmacy', category: 'Healthcare', priority: 'Important', url: '', notes: 'Transfer prescriptions' },
+                { id: 33, name: 'Specialists', category: 'Healthcare', priority: 'Important', url: '', notes: 'Any ongoing care providers' },
+                { id: 34, name: 'Veterinarian', category: 'Healthcare', priority: 'Optional', url: '', notes: 'For pets' },
+                
+                // Shopping & Retail
+                { id: 35, name: 'Online Retailers', category: 'Shopping', priority: 'Optional', url: '', notes: 'Target, Walmart, etc.' },
+                { id: 36, name: 'Loyalty Programs', category: 'Shopping', priority: 'Optional', url: '', notes: 'Store rewards cards' },
+            ];
+
+            const [services, setServices] = useState([]);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('All');
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [newService, setNewService] = useState({ name: '', category: 'Other', priority: 'Optional', url: '', notes: '' });
+
+            const categories = ['All', 'Government & Legal', 'Financial', 'Insurance', 'Utilities', 'Subscriptions', 'Employment', 'Healthcare', 'Shopping'];
+
+            useEffect(() => {
+                const stored = localStorage.getItem('addressChangeServices');
+                if (stored) {
+                    setServices(JSON.parse(stored));
+                } else {
+                    setServices(defaultServices.map(s => ({ ...s, completed: false })));
+                }
+            }, []);
+
+            useEffect(() => {
+                if (services.length > 0) {
+                    localStorage.setItem('addressChangeServices', JSON.stringify(services));
+                }
+            }, [services]);
+
+            const toggleComplete = (id) => {
+                setServices(services.map(s => 
+                    s.id === id ? { ...s, completed: !s.completed } : s
+                ));
+            };
+
+            const addCustomService = () => {
+                if (newService.name.trim()) {
+                    const newId = Math.max(...services.map(s => s.id), 0) + 1;
+                    setServices([...services, { ...newService, id: newId, completed: false }]);
+                    setNewService({ name: '', category: 'Other', priority: 'Optional', url: '', notes: '' });
+                    setShowAddForm(false);
+                }
+            };
+
+            const deleteService = (id) => {
+                setServices(services.filter(s => s.id !== id));
+            };
+
+            const filteredServices = services.filter(service => {
+                const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    service.notes.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchesCategory = selectedCategory === 'All' || service.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+
+            const stats = {
+                total: services.length,
+                completed: services.filter(s => s.completed).length,
+                critical: services.filter(s => s.priority === 'Critical' && !s.completed).length
+            };
+
+            const priorityColors = {
+                'Critical': 'bg-red-100 text-red-800 border-red-200',
+                'Important': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                'Optional': 'bg-gray-100 text-gray-800 border-gray-200'
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-6">
+                    <div className="max-w-6xl mx-auto">
+                        {/* Header */}
+                        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Moving Address Change Checklist</h1>
+                            </div>
+                            <p className="text-gray-600 mb-4 text-sm md:text-base">Keep track of all the services and accounts you need to update with your new address.</p>
+                            
+                            {/* Progress Stats */}
+                            <div className="grid grid-cols-3 gap-2 md:gap-4">
+                                <div className="bg-indigo-50 rounded-lg p-3 md:p-4 border border-indigo-200">
+                                    <div className="text-xl md:text-2xl font-bold text-indigo-600">{stats.completed}/{stats.total}</div>
+                                    <div className="text-xs md:text-sm text-gray-600">Completed</div>
+                                </div>
+                                <div className="bg-green-50 rounded-lg p-3 md:p-4 border border-green-200">
+                                    <div className="text-xl md:text-2xl font-bold text-green-600">{Math.round((stats.completed / stats.total) * 100)}%</div>
+                                    <div className="text-xs md:text-sm text-gray-600">Progress</div>
+                                </div>
+                                <div className="bg-red-50 rounded-lg p-3 md:p-4 border border-red-200">
+                                    <div className="text-xl md:text-2xl font-bold text-red-600">{stats.critical}</div>
+                                    <div className="text-xs md:text-sm text-gray-600">Critical</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Search and Filter */}
+                        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 mb-6">
+                            <div className="flex flex-col md:flex-row gap-3 md:gap-4 mb-4">
+                                <div className="flex-1 relative">
+                                    <svg className="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        placeholder="Search services..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => setShowAddForm(!showAddForm)}
+                                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 justify-center text-sm md:text-base"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add Custom
+                                </button>
+                            </div>
+
+                            {/* Category Filter */}
+                            <div className="flex flex-wrap gap-2">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
+                                            selectedCategory === cat
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Add Service Form */}
+                            {showAddForm && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <h3 className="font-semibold mb-3 text-sm md:text-base">Add Custom Service</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <input
+                                            type="text"
+                                            placeholder="Service name"
+                                            value={newService.name}
+                                            onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        />
+                                        <select
+                                            value={newService.category}
+                                            onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        >
+                                            {categories.filter(c => c !== 'All').map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <select
+                                            value={newService.priority}
+                                            onChange={(e) => setNewService({ ...newService, priority: e.target.value })}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        >
+                                            <option value="Critical">Critical</option>
+                                            <option value="Important">Important</option>
+                                            <option value="Optional">Optional</option>
+                                        </select>
+                                        <input
+                                            type="url"
+                                            placeholder="Website URL (optional)"
+                                            value={newService.url}
+                                            onChange={(e) => setNewService({ ...newService, url: e.target.value })}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Notes (optional)"
+                                            value={newService.notes}
+                                            onChange={(e) => setNewService({ ...newService, notes: e.target.value })}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg md:col-span-2 text-sm"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 mt-3">
+                                        <button
+                                            onClick={addCustomService}
+                                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+                                        >
+                                            Add Service
+                                        </button>
+                                        <button
+                                            onClick={() => setShowAddForm(false)}
+                                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Services List */}
+                        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+                            <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-4">
+                                {selectedCategory === 'All' ? 'All Services' : selectedCategory}
+                                <span className="text-sm font-normal text-gray-500 ml-2">
+                                    ({filteredServices.length} {filteredServices.length === 1 ? 'service' : 'services'})
+                                </span>
+                            </h2>
+                            
+                            <div className="space-y-3">
+                                {filteredServices.map(service => (
+                                    <div
+                                        key={service.id}
+                                        className={`p-3 md:p-4 border-2 rounded-lg transition-all ${
+                                            service.completed
+                                                ? 'bg-green-50 border-green-200 opacity-75'
+                                                : 'bg-white border-gray-200 hover:border-indigo-300'
+                                        }`}
+                                    >
+                                        <div className="flex items-start gap-2 md:gap-3">
+                                            <button
+                                                onClick={() => toggleComplete(service.id)}
+                                                className="mt-1 flex-shrink-0"
+                                            >
+                                                {service.completed ? (
+                                                    <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="w-6 h-6 text-gray-400 hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                                                    </svg>
+                                                )}
+                                            </button>
+                                            
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <h3 className={`font-semibold text-sm md:text-base ${service.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                                                            {service.name}
+                                                        </h3>
+                                                        <span className={`text-xs px-2 py-0.5 md:py-1 rounded-full border ${priorityColors[service.priority]}`}>
+                                                            {service.priority}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        {service.url && (
+                                                            <a
+                                                                href={service.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-indigo-600 hover:text-indigo-800"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                </svg>
+                                                            </a>
+                                                        )}
+                                                        {service.id > 36 && (
+                                                            <button
+                                                                onClick={() => deleteService(service.id)}
+                                                                className="text-red-500 hover:text-red-700"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mt-1 text-xs md:text-sm text-gray-600">
+                                                    <span className="text-gray-500">{service.category}</span>
+                                                    {service.notes && (
+                                                        <span className="ml-2">• {service.notes}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {filteredServices.length === 0 && (
+                                <div className="text-center py-12 text-gray-500 text-sm md:text-base">
+                                    No services found. Try adjusting your search or filters.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<AddressChangeApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
